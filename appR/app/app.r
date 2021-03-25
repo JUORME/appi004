@@ -60,8 +60,8 @@ shinyApp(
 							)
 						),
 					fluidRow(
-						column(7,
-							tabPanel("Tabla Inventario insuficiente",DT::dataTableOutput('table0.output'),style = 'font-size:90%')
+						column(5,
+							tabPanel("Tabla de Productos",DT::dataTableOutput('table0.output'),style = 'font-size:90%')
 						)
 					)
 				)
@@ -71,8 +71,8 @@ shinyApp(
 
 		shinyjs::hide("idBtn2")
 
-		source(paste(pathglo,"/functions/extractos.r",sep=""))
-		data <- extrac()
+		source(paste(pathglo,"/functions/ultima_compra.r",sep=""))
+		data <- ultimacompra()
 
 		fechaid <- paste("Actualizado al ",Sys.Date(),sep="")
 

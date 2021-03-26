@@ -57,7 +57,7 @@ shinyApp(
 					),
 					valueBoxOutput("progressBox1",width = 2),valueBoxOutput("progressBox2",width = 2),
 					fluidRow(
-						column(5,
+						column(5
 						)
 					),					
 					fluidRow(
@@ -66,7 +66,6 @@ shinyApp(
 						)
 					),
 					column(6,
-		            htmlOutput("text3"),
 		            tabPanel("Kardex Detallado", DT::dataTableOutput(outputId = 'table2.output'),style = "font-size:95%;top:10px;" )
 		          )
 				)
@@ -78,15 +77,19 @@ shinyApp(
 
 		shinyjs::hide("idBtn2")
 
-		# source(paste(pathglo,"/functions/ultima_compra.r",sep=""))
-		# data <- ultimacompra()
+		source(paste(pathglo,"/functions/ultima_compra.r",sep=""))
+		data <- ultimacompra()
 
-		data <- iris
+		# data <- iris
 		fechaid <- paste("Actualizado al ",Sys.Date(),sep="")
 
 		observeEvent(input$idBtn1,{
 
-			output$table0.output <- DT::renderDataTable({DT::datatable(data)}) 
+			output$table0.output <- DT::renderDataTable({
+
+				DT::datatable(selection = 'single',data)
+				}) 
+
 			output$selected_var <- renderText({fechaid})
 			shinyjs::show("idBtn2")
 
@@ -114,7 +117,6 @@ shinyApp(
 					write.xlsx(data,file,row.names=TRUE)
 				})
 
-
          	})
 
 
@@ -123,35 +125,15 @@ shinyApp(
 
             #ALGORITMO PARA MOSTRAR VISTA PREVIA DEL ARCHIVO EXCEL
 
-             selectedrowindex <- input$table2.output_rows_selected
+             selectedrowindex <- input$table1.output_rows_selected
              det<-global_dataread1$dataread1[selectedrowindex,]
-             #det<-as.data.frame(det[1,3])
 
-             source(paste(pathglo,"/scripts/read_data2b.r",sep=""))
-             #source(paste(pathglo,"/scripts/read_data2.r",sep=""))
-             global_dataread2$dataread2<-read_data2(ent,det)
-
-             # mat <- global_dataread2$dataread2
-             # if (sum(mat$Alert)>0) {
-             #     output$text3 <- renderText({ paste("Validador en Tiempo Real desde Dynamics 365: ","<font color=\"#FF0000\"><b> Este producto PRESENTA NEGATIVOS EN EL KARDEX</b></font>") })
-             # } else {
-             #     output$text3 <- renderText({ paste("Validador en Tiempo Real desde Dynamics 365: ","<font color=\"#45C777\"><b> Este producto ha sido REPARADO EN LAS ULTIMAS HORAS</b></font>") })
-             # }
-
-
+             source(paste(pathglo,"/function/read_c1.r",sep=""))
+             global_dataread2$dataread2<-read_c1(ent,det)
 
              output$table2.output <- DT::renderDataTable({
-
-                DT::datatable(global_dataread2$dataread2,rownames = FALSE,options =
-                    list(pageLength = 20,lengthMenu
-                      = list(c(20,50, 100, 300, -1), list('20', '50', '100','300', 'All')), paging = T)) %>%
-                        formatStyle(
-                          'Alert',
-                          #transform = 'rotateX(45deg) rotateY(20deg) rotateZ(30deg)',
-                          backgroundColor = styleEqual(
-                            c(0,1), c('lightgreen', '#FC8591')
-                          )
-                        )
-             })
-		
+             	DT::datatable(global_dataread2$dataread2)
+             	})
+ 
  		})
+	})

@@ -55,7 +55,7 @@ setwd(pathglo)
 
 	source("function_get_collect.r")
 	prodprice <- get_records_url(vec1,token)
-	head(prodprice)
+	#head(prodprice)
 
 	data2 <- as.data.frame(prodprice)
 
@@ -65,6 +65,8 @@ setwd(pathglo)
 
 	alldata$InvoiceDocumentDate <- as.character(as.POSIXct(alldata$InvoiceDocumentDate, format="%Y-%m-%d",tz="UTC"))
 	#prodprice$CreatedDateTimeInvoice <- as.character(as.POSIXct(prodprice$CreatedDateTimeInvoice, format="%Y-%m-%d %H:%M:%S",tz="UTC"))
+
+	fwrite(alldata,"../upload/alldata.csv", sep= ",")	
 
 # Opciones de Filtros
 

@@ -10,4 +10,4 @@ setwd(pathglo)
 library(shiny)
 library(shinydashboard)
 
-runApp("app", host="0.0.0.0", port=8050)
+runApp("app", host="0.0.0.0", port=8500)

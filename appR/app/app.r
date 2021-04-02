@@ -9,11 +9,11 @@ options(encoding = "utf-8")
 options(shiny.maxRequestSize = 30*1024^2)
 options(warn=-1)
 
-ent <- 1
+ent <- 2
 if(ent == 1){
-	pathglo <- "D:/github/appi005/appR"
+	pathglo <- "D:/github/appi010/appR"
 }else {
-	pathglo <- "/srv/shiny-server/appi001/appR"
+	pathglo <- "/srv/shiny-server/appi010/appR"
 }
 
 
@@ -47,7 +47,7 @@ shinyApp(
 			),
 
 			shinythemes::themeSelector(), #seleccionar themas libreria shinythemes
-			navbarPage( "Modulo Análisis de Productos - Trujillo investment 2021",
+			navbarPage( "Modulo Análisis de Productos - Trujillo Investment 2021",
 				tabPanel("Precios de Costo",
 					sidebarPanel( style='margin-left:-10',
 
@@ -68,7 +68,7 @@ shinyApp(
 						),
 
 						column(5,
-							htmlOutput('infor'),
+							textOutput('infor'),
 				            tabPanel("Tabla de Facturas", DT::dataTableOutput('table1.output'),style = "font-size:95%" )
 	          				)
 					),
@@ -76,51 +76,55 @@ shinyApp(
 			)
 		),	
 	server <- function(input, output,session ){
-		# data <- iris
+		
+		shinyjs::hide("idBtn2")
+	# Carga del algoritmo del ultimo comprobante regustrado
 		source(paste(pathglo,"/functions/ultima_compra.r",sep=""))
 		data <- ultimacompra()
 
+	# Algoritmo com caracteristicas reactivas
 		Product <- reactive({data})
 
-
+	# Descripción para archivo de descarga
 		fechaid <- paste("Actualizado al ",Sys.Date(),sep="")
 
-		progre1 <- subset(data, Val == 1)
-		progre2 <- subset(data, UnitCost == 0)
+	# Progreso de avance 
+		progre1 <- subset(data, data[,8] == 1)
+		progre2 <- subset(data, data[,4] == 0)
 
-		shinyjs::hide("idBtn2")
-
+		
+	# Observe event del Btn 01 - Calcular los precios de costo
 		observeEvent(input$idBtn1,{
 
 			output$table0.output <- DT::renderDataTable({
 
-				DT::datatable(Product(),selection = 'single', 
+				DT::datatable(Product(),selection = "single", 
 					options = list(pageLength = 15,
 									autoWidth = TRUE,
 									filter = "top"))
 				}) 
 
+		# Visualizar la fecha de consulta
 			output$selected_var <- renderText({fechaid})
 
-			
-
+		# Visualizar el KPI
 			output$progressBox1 <- renderValueBox({
                 valueBox(
-                  #paste0(25 + input$count, "%"), "Progress", icon = icon("list"),
                   paste0(nrow(progre1)), "Productos Observados", icon = icon("list"),
                   color = 'green'
                 )
 			})
 			output$progressBox2 <- renderValueBox({
                 valueBox(
-                  #paste0(25 + input$count, "%"), "Progress", icon = icon("list"),
                   paste0(nrow(progre2)), "Productos con Costo Cero", icon = icon("list"),
                   color = 'yellow'
                 )
              })
 
+		# Muestra el segundo btn de Download
 			shinyjs::show("idBtn2")
-			 
+		
+		# Funacion para descargar el archivo data 
 			output$idBtn2 <- downloadHandler(
 
 				filename = function(){
@@ -133,23 +137,23 @@ shinyApp(
          	})
 
 
+	# Funcion que permite visualizar la segunda tabla seleccionando una fila de la tabla0
         observeEvent(input$table0.output_rows_selected, {
 			 	row_count <- input$table0.output_rows_selected
 			 	dataselec <- Product()[row_count,]
 
         		output$infor <- renderText({
-				 # 	cat('Item Seleccionado: ')
-					# cat(dataselec[,1]  )
-					# cat(dataselec[,2] )
 					 
-					paste("Producto: ","<font color=\"#45C777\"><b>",dataselec[,1], " " ,dataselec[,2] ,"</b></font>",sep = "")
+					paste("Producto: ",dataselec[,1],dataselec[,2],sep = " ")
 	        	})
 
 	        	output$table1.output <- DT::renderDataTable({
 
 	        		dataselec1 <- read.csv(paste(pathglo,"/upload/alldata.csv",sep = ""),sep=",")
-	        		dataselec1.1 <- dataselec1[,c(1,2,4,5,6,7)]
+	        		dataselec1.1 <- dataselec1[,c(1,2,4,5,6,7,9)]
 	        		dataselec2 <- subset(dataselec1.1, ItemId == as.numeric(dataselec[,1]) )
+
+	        		names(dataselec2) <- c("IdCompra","Factura","Cod","UniCompra","UniPrecio","FechaEmision","Moneda")
 
 					DT::datatable(dataselec2,selection = 'single', 
 						options = list(pageLength = 10,
